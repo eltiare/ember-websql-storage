@@ -42,9 +42,10 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
       for (i=0; i < results.rows.length; i++) { rows.push(results.rows.item(i)); }
       store.load(type, id, rows);
     }
+    var query = qr.selectQuery();
     this.db.transaction(
-      function(tx) { tx.executeSql(qr.selectQuery(), [], selectSuccess); },
-      function(err) { console.error(err); }
+      function(tx) { tx.executeSql(query, [], selectSuccess); },
+      function(err) { console.error(query, err); }
     )
   },
 
@@ -55,6 +56,7 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
     var data = this.serialize(record);
     var adapter = this;
     var qr = new QueryRapper().tableName(this.tableName(type)).values(data);
+    var query = qr.insertQuery();
     function insertSuccess(tx, results) {
       data.id = results.insertId;
       var dat = {}, root = adapter.rootForType(type);
@@ -62,8 +64,8 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
       adapter.didCreateRecord(store, type, record, dat);
     }
     return this.db.transaction(
-      function(tx) { tx.executeSql(qr.insertQuery(), [], insertSuccess); },
-      function(err) { this.dbError(err, record, adapter); }
+      function(tx) { tx.executeSql(query, [], insertSuccess); },
+      function(err) { this.dbError(query, err, record, adapter); }
     );
   },
 
@@ -74,45 +76,48 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
     var data = this.serialize(record);
     var adapter = this;
     var qr = new QueryRapper({id: record.id}).tableName(this.tableName(type)).values(data);
+    var query = qr.updateQuery();
     function updateSuccess(tx, results) {
       var dat = {}, root = adapter.rootForType(type);
+      data.id = record.id;
       dat[root] = data;
       adapter.didUpdateRecord(store, type, record, dat);
     }
     return this.db.transaction(
-      function(tx) { tx.executeSql(qr.updateQuery(), [], updateSuccess); },
-      function(err) { this.dbError(err, record, adapter); }
+      function(tx) { tx.executeSql(query, [], updateSuccess); },
+      function(err) { this.dbError(query, err, record, adapter); }
     )
   },
 
   deleteRecord: function(store, type, record) {
     var adapter = this;
     var qr = new QueryRapper({id: record.get('id')}).tableName(this.tableName(type));
+    var query = qr.deleteQuery();
     function deleteSuccess(tx, results) {
       adapter.didDeleteRecord(store,type,record);
     }
     return this.db.transaction(
-      function(tx) { tx.executeSql(qr.deleteQuery(), [], deleteSuccess); },
-      function(err) { this.dbError(err, record, adapter); }
+      function(tx) { tx.executeSql(query, [], deleteSuccess); },
+      function(err) { this.dbError(query, err, record, adapter); }
     );
   },
 
 
   ///////////// Support Functions //////////////////
   dbError: function(err, record) {
-    console.info(err);
+    console.error(err, record);
     record.errors = record.errors || {};
     record.errors.db = err.message;
     adapter.didError(store,type,record);
   },
 
   rootForType: function(type) {
-    var serializer = get(this, 'serializer');
+    var serializer = Ember.get(this, 'serializer');
     return serializer.rootForType(type);
   },
 
   pluralize: function(string) {
-    var serializer = get(this, 'serializer');
+    var serializer = Ember.get(this, 'serializer');
     return serializer.pluralize(string);
   },
 
