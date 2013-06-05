@@ -12,19 +12,21 @@ describe('EmberCordovaStorageAdapter', function() {
         boolean: true
       });
       m.save();
+      m.get('store').commit();
       waitForReady();
     });
   });
 
   it('creates a record', function() {
-    waitForReady();
     runs(function() { expect(m.get('number')).toBe(1234); });
   });
 
   it('retrieves a record', function() {
+    var m2;
     waitForReady();
     runs(function() {
       m2 = App.TestModel.find(m.id);
+      m2.get('store').commit();
       waitForReady(m2);
     });
     runs(function() { expect(m2.get('string')).toBe(m.get('string')); });
@@ -35,15 +37,20 @@ describe('EmberCordovaStorageAdapter', function() {
     runs(function() {
       m.set('number', 4567);
       m.save();
+      m.get('store').commit();
       waitForReady();
     });
-    runs(function() { m.reload(); waitForReady(); });
+    //runs(function() { m.reload(); waitForReady(); });
     runs(function() { expect(m.get('number')).toBe(4567); });
   });
 
   it('deletes a record', function() {
     waitForReady();
-    runs(function() { console.info('Deleting in test!'); m.deleteRecord(); waitForDeleted(); });
+    runs(function() {
+      m.deleteRecord();
+      m.get('store').commit();
+      waitForDeleted();
+    });
     runs(function() { expect(m.get('isDeleted')).toBe(true); });
   });
 
@@ -53,7 +60,7 @@ describe('EmberCordovaStorageAdapter', function() {
 
   function waitForDeleted(model) {
     model = model || m;
-    waitForMessage(model, 'rootState.deleted.committed');
+    waitForMessage(model, 'rootState.deleted.saved');
   }
 
   function waitForReady(model) {

@@ -36,27 +36,28 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
   },
 
   find: function(store, type, id) {
-    console.info('Finding!');
     var qr = new QueryRapper({id: id}).tableName(this.tableName(type));
     var adapter = this;
     function selectSuccess(tx, results) {
-      var data, root;
+      var data, root = this.rootForType(type);
+      data = {};
+      data[root] = {};
       if (results.rows.length > 0) {
-        root = adapter.rootForType(type);
-        data = {};
         data[root] = results.rows.item(0);
+        adapter.didFindRecord(store,type,data,id);
       }
-      adapter.didFindRecord(store,type,data,id);
     }
     var query = qr.selectQuery();
     this.db.transaction(
       function(tx) { tx.executeSql(query, [], selectSuccess); },
-      function(err) { console.error(query, err); throw err; }
+      function(err) {
+        adapter.logError(query);
+        adapter.rejectionHandler(err);
+      }
     )
   },
 
   createRecord: function(store, type, record) {
-    console.info('Creating!');
     if (record.validate && !record.validate()) {
       return store.recordWasInvalid(record, record.errors);
     }
@@ -77,7 +78,6 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
   },
 
   updateRecord: function(store, type, record) {
-    console.info('Updating!');
     if (record.validate && !record.validate()) {
       return store.recordWasInvalid(record, record.errors);
     }
@@ -86,7 +86,7 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
     var qr = new QueryRapper({id: record.id}).tableName(this.tableName(type)).values(data);
     var query = qr.updateQuery();
     function updateSuccess(tx, results) {
-      var dat = adapter.serializeWithRootAndId(type,record);
+      var dat = adapter.serializeWithRootAndId(type, record);
       adapter.didUpdateRecord(store, type, record, dat);
     }
     return this.db.transaction(
@@ -96,11 +96,9 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
   },
 
   deleteRecord: function(store, type, record) {
-    console.info('Deleting!');
     var adapter = this;
     var qr = new QueryRapper({id: record.get('id')}).tableName(this.tableName(type));
     var query = qr.deleteQuery();
-    console.info(query);
     function deleteSuccess(tx, results) {
       adapter.didDeleteRecord(store,type,record);
     }
@@ -113,7 +111,7 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
 
   ///////////// Support Functions //////////////////
   dbError: function(query, err, type, record) {
-    console.error(query, err, record);
+    this.logError(query, err, record);
     record.errors = record.errors || {};
     record.errors.db = err.message;
     this.didError(store,type,record);
@@ -138,6 +136,18 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
 
   tableName: function(type) {
     return this.pluralize(this.rootForType(type));
+  },
+
+  logError: function() {
+    if (console && console.error) {
+      console.error.apply(console, arguments);
+    }
+  },
+
+  rejectionHandler: function(reason) {
+    Ember.Logger.error(reason, reason.message);
+    throw reason;
   }
+
 
 });
