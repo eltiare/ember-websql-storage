@@ -102,7 +102,7 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
     var query = qr.deleteQuery();
     console.info(query);
     function deleteSuccess(tx, results) {
-      adapter.didDeleteRecord(store,type,record, adapter.serializeWithRootAndId(type,record));
+      adapter.didDeleteRecord(store,type,record);
     }
     return this.db.transaction(
       function(tx) { tx.executeSql(query, [], deleteSuccess); },

@@ -1,3 +1,4 @@
+
 describe('EmberCordovaStorageAdapter', function() {
   var m;
 
@@ -42,7 +43,7 @@ describe('EmberCordovaStorageAdapter', function() {
 
   it('deletes a record', function() {
     waitForReady();
-    runs(function() { m.deleteRecord(); waitForDeleted(); });
+    runs(function() { console.info('Deleting in test!'); m.deleteRecord(); waitForDeleted(); });
     runs(function() { expect(m.get('isDeleted')).toBe(true); });
   });
 
