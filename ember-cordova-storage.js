@@ -49,14 +49,17 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
     var qr = new QueryRapper().tableName(this.tableName(type));
     var adapter = this;
     return this.query(qr.selectQuery())
-        .then(function(arr) {
-          var tx = arr[0], results = arr[1];
-          var data = {}, root = adapter.pluralize(type);
-          data[root] = [];
-          for (var i = 0; i < results.rows.length; i++) { data.push(results.rows.item(i)); }
-          adapter.didFindAll(store,type,data);
-        })
-        .then(null, DS.rejectionHandler);
+        .then(
+          function(arr) {
+            var tx = arr[0], results = arr[1];
+            var data = {}, root = adapter.rootForType(type) + 's';
+            data[root] = [];
+            for (var i = 0; i < results.rows.length; i++) { data.push(results.rows.item(i)); }
+            adapter.didFindAll(store,type,data);
+            this.logInfo(data);
+          },
+          DS.rejectionHandler
+        );
   },
 
   findQuery: function(store, type, query, recordArray) {
@@ -66,7 +69,7 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
     return this.query(qr.selectQuery())
         .then(function(arr) {
           var tx = arr[0], results = arr[1];
-          var data = {}, root = adapter.rootForType(type);
+          var data = {}, root = adapter.rootForType(type) + 's';
           data[root] = [];
           for (var i = 0; i < results.rows.length; i++) { data.push(results.rows.item(i)); }
           adapter.didFindQuery(store,type,data,recordArray);
@@ -165,8 +168,15 @@ DS.CordovaStorageAdapter = DS.Adapter.extend({
     }
   },
 
+  logInfo: function() {
+    if (console && console.info) {
+      console.info.apply(console, arguments);
+    }
+  },
+
   query: function(query) {
     var adapter = this;
+    this.logInfo('Running query: ' + query);
     return new Ember.RSVP.Promise(function(resolve, reject){
       adapter.db.transaction(
           function(tx)  { tx.executeSql(query, [], function(tx, results) { Ember.run(null, resolve, [tx, results]); }); },
