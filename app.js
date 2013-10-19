@@ -1,11 +1,8 @@
-window.App = Ember.Application.create();
-
-App.Store = DS.Store.extend({
-  adapter: DS.CordovaStorageAdapter.create()
-});
+window.App = {};
 
 App.createTables = function() {
-  var db = App.Store.create().adapter.db;
+  var db = store.adapter.create().db;
+
   db.transaction(
     function(tx) {
       tx.executeSql('DROP TABLE IF EXISTS test_models;');
@@ -28,13 +25,16 @@ App.createTables = function() {
 
 }
 
-App.dbCreated = false;
-
 App.TestModel = DS.Model.extend({
-  string:   DS.attr('string'),
   number:   DS.attr('number'),
   date:     DS.attr('date'),
+  string:   DS.attr('string'),
   boolean:  DS.attr('boolean')
 });
+
+window.store = createStore({ adapter: DS.WebSqlStorageAdapter.extend({ logQueries: true }), test_model: App.TestModel});
+
+App.dbCreated = false;
+setTimeout(App.createTables, 500);
 
 

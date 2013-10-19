@@ -2,45 +2,25 @@
   "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-  <title>Jasmine Spec Runner</title>
+  <title>WebSQL Storage Spec Runner</title>
 
-  <link rel="shortcut icon" type="image/png" href="lib/jasmine-1.3.1/jasmine_favicon.png">
-  <link rel="stylesheet" type="text/css" href="lib/jasmine-1.3.1/jasmine.css">
-  <script type="text/javascript" src="lib/jasmine-1.3.1/jasmine.js"></script>
-  <script type="text/javascript" src="lib/jasmine-1.3.1/jasmine-html.js"></script>
+  <link rel="stylesheet" href="lib/qunit.css">
 
   <script src="lib/jquery.js"></script>
   <script src="lib/handlebars.js"></script>
   <script src="lib/ember.js"></script>
   <script src="lib/ember-data.js"></script>
-  <script src="lib/cordova.js"></script>
   <script src="lib/query-rapper.js"></script>
-  <script src="ember-cordova-storage.js"></script>
-
-  <!-- include source files here... -->
-  <script src="app.js"></script>
-
-  <!-- include spec files here... -->
-  <!-- script src="spec/SimpleSpec.js"></script -->
-  <script src="spec/CordovaStorageSpec.js"></script>
-
-  <script type="text/javascript">
-    App.createTables();
-    var jasmineEnv = jasmine.getEnv();
-    jasmineEnv.updateInterval = 1000;
-    var htmlReporter = new jasmine.HtmlReporter();
-    jasmineEnv.addReporter(htmlReporter);
-    jasmineEnv.specFilter = function(spec) {
-      return htmlReporter.specFilter(spec);
-    };
-    var currentWindowOnload = window.onload;
-    window.onload = function() {
-      if (currentWindowOnload) { currentWindowOnload(); }
-      jasmineEnv.execute();
-    };
-  </script>
+  <script src="ember-websql-storage.js"></script>
 
 </head>
+
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script src="lib/qunit.js"></script>
+<script src="lib/ember-configuration.js"></script>
+<script src="app.js"></script>
+<script src="tests.js"></script>
 
 <body>
 </body>
