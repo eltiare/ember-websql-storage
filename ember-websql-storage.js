@@ -110,7 +110,6 @@ DS.WebSqlStorageAdapter = DS.Adapter.extend({
   serialize: function(store, type, record) {
     var data = {};
     var serializer = store.serializerFor(type.typeKey);
-    console.info(serializer);
     data = serializer.serialize(record);
     return data;
   },
@@ -146,14 +145,12 @@ DS.WebSqlStorageAdapter = DS.Adapter.extend({
           function(tx)  {
             tx.executeSql(query, [], function(tx, results) {
               var data = callback(tx, results);
-              console.info(resolve);
-              resolve(data);
-              //Ember.run(null, resolve, data);
+              Ember.run(function() {resolve(data); });
             });
           },
           function(err) {
-            adapter.logError(query);
-            Ember.run(null, reject, err);
+            adapter.logError(err, query);
+            Ember.run(reject, err);
           }
       );
     });
