@@ -1,5 +1,18 @@
-window.App = {};
+Ember.run(function() {
+  window.App = Ember.Application.create();
+});
 
+App.rootElement = '#ember-root';
+App.Router.map(function() {
+  this.route("home", { path: '/'});
+})
+
+Ember.run(function() {
+  App.setupForTesting();
+  App.injectTestHelpers();
+});
+
+var store;
 App.createTables = function() {
   var db = store.adapter.create().db;
 
@@ -32,9 +45,16 @@ App.TestModel = DS.Model.extend({
   boolean:  DS.attr('boolean')
 });
 
-window.store = createStore({ adapter: DS.WebSqlStorageAdapter.extend({ logQueries: true }), test_model: App.TestModel});
-
 App.dbCreated = false;
-setTimeout(App.createTables, 500);
+
+Ember.run(function() {
+  window.env = setupStore({ isDefaultStore: true, test_model: App.TestModel, adapter: DS.WebSqlStorageAdapter.extend({ logQueries: true }), serializer: DS.JSONSerializer });
+  window.store = env.store;
+  store = window.store = env.store;
+  setTimeout(App.createTables, 500);
+})
+
+
+
 
 
