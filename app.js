@@ -61,8 +61,10 @@ DS.JSONSerializer.reopen({
   }
 });
 
+App.Store = DS.Store.extend({})
+
 Ember.run(function() {
-  window.env = setupStore({ isDefaultStore: true, test_model: App.TestModel, adapter: DS.WebSqlStorageAdapter.extend({ logQueries: true }), serializer: DS.JSONSerializer });
+  window.env = setupStore({ isDefaultStore: true, test_model: App.TestModel, adapter: DS.WebSqlStorageAdapter.extend({ logQueries: true }) });
   window.store = env.store;
   store = window.store = env.store;
   setTimeout(App.createTables, 500);

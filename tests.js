@@ -39,7 +39,7 @@ asyncTest('creates a record', function() {
       ok(m.get('number') === 12345);
       start();
     }, function(err) {
-      console.error(err);
+      console.error(err, err.message);
       ok(false);
       start();
     });

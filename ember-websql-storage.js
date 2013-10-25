@@ -22,7 +22,7 @@ DS.WebSqlStorageAdapter = DS.Adapter.extend({
   dbSize: 5000000,   // Size is determined in bytes
   logQueries: false,
 
-  serializer: '_json',
+  serializer: DS.JSONSerializer.create(),
 
   init: function() {
     this._super.apply(this, arguments);
@@ -73,10 +73,7 @@ DS.WebSqlStorageAdapter = DS.Adapter.extend({
     var adapter = this;
     var qr = new QueryRapper().tableName(this.tableName(type)).values(data);
     return this.query(qr.insertQuery(), function(tx, results) {
-      data.id = results.insertId;
-      var dat = {}, root = adapter.singularize(type);
-      dat[root] = data;
-      return dat;
+      return adapter.serializeWithRootAndId(store,type,record,results.insertId);
     });
   },
 
@@ -85,7 +82,7 @@ DS.WebSqlStorageAdapter = DS.Adapter.extend({
     var adapter = this;
     var qr = new QueryRapper({id: record.id}).tableName(this.tableName(type)).values(data);
     return this.query(qr.updateQuery(), function(tx, results) {
-      return adapter.serializeWithRootAndId(type, record);
+      return adapter.serializeWithRoot(store, type, record);
     });
   },
 
@@ -93,7 +90,7 @@ DS.WebSqlStorageAdapter = DS.Adapter.extend({
     var adapter = this;
     var qr = new QueryRapper({id: record.get('id')}).tableName(this.tableName(type));
     return this.query(qr.deleteQuery(), function(tx, results) {
-      return adapter.serializeWithRootAndId(type, record);
+      return adapter.serializeWithRoot(store, type, record);
     });
   },
 
@@ -114,10 +111,15 @@ DS.WebSqlStorageAdapter = DS.Adapter.extend({
     return data;
   },
 
-  serializeWithRootAndId: function(store,type, record) {
+  serializeWithRoot: function(store, type, record) {
     var data = {}, root = this.singularize(type);
     data[root] = this.serialize(store,type,record);
-    data[root].id = record.id;
+    return data;
+  },
+
+  serializeWithRootAndId: function(store,type, record, id) {
+    var data = this.serializeWithRoot(store,type,record);
+    data.id = id
     return data;
   },
 
@@ -145,12 +147,12 @@ DS.WebSqlStorageAdapter = DS.Adapter.extend({
           function(tx)  {
             tx.executeSql(query, [], function(tx, results) {
               var data = callback(tx, results);
-              Ember.run(function() {resolve(data); });
+              Ember.run(null, resolve, data);
             });
           },
           function(err) {
             adapter.logError(err, query);
-            Ember.run(reject, err);
+            Ember.run(null, reject, err);
           }
       );
     });
