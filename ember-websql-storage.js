@@ -73,7 +73,9 @@ DS.WebSqlStorageAdapter = DS.Adapter.extend({
     var adapter = this;
     var qr = new QueryRapper().tableName(this.tableName(type)).values(data);
     return this.query(qr.insertQuery(), function(tx, results) {
-      return adapter.serializeWithRootAndId(store,type,record,results.insertId);
+      var serialized = adapter.serialize(store,type,record);
+      serialized.id = results.insertId;
+      return serialized;
     });
   },
 
