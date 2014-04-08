@@ -61,7 +61,7 @@ DS.JSONSerializer.reopen({
   }
 });
 
-App.Store = DS.Store.extend({})
+App.ApplicationStore = DS.Store.extend({})
 
 Ember.run(function() {
   window.env = setupStore({ isDefaultStore: true, test_model: App.TestModel, adapter: DS.WebSqlStorageAdapter.extend({ logQueries: true }) });
