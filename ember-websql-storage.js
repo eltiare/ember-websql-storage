@@ -106,8 +106,7 @@ DS.WebSqlStorageAdapter = DS.Adapter.extend({
 
   serialize: function(store, type, record) {
     var data = {};
-    var serializer = store.serializerFor(type.typeKey);
-    data = serializer.serialize(record);
+    data = this.serializer.serialize(record);
     return data;
   },
 
